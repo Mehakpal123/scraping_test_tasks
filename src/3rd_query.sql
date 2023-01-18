@@ -6,7 +6,7 @@ SELECT
     GP.`product_short_description`
 FROM `grommet_products` GP
 INNER JOIN (
-	SELECT *
+	SELECT product_id
 	FROM   
 		`grommet_product_categories`
 	WHERE `product_category_id` = (  
@@ -21,7 +21,7 @@ INNER JOIN (
 		WHERE `sub_category` = 'Skincare' 
 	) 
 	UNION
-	SELECT * 
+	SELECT product_id
 	FROM `grommet_product_to_keyword` 
 	WHERE `keyword_id` = (  
 		SELECT    
@@ -31,4 +31,22 @@ INNER JOIN (
 	)
 ) RawProducts ON RawProducts.product_id = GP.id
 WHERE GP.`is_sold_out` = 0;
+-- Query Execution Time : 0.015 sec
 
+--------------------- 2nd query -----------------------------------
+
+SELECT
+	DISTINCT GP.`id`,
+	GP.`product_name`,
+    GP.`product_img_url`,
+    GP.`product_url`,
+    GP.`product_price_min`,
+    GP.`product_short_description`
+FROM `grommet_products` GP
+LEFT OUTER JOIN `grommet_product_categories` GPC ON GPC.product_id = GP.id
+LEFT OUTER JOIN `grommet_gifts_categories` GGC ON GGC.id = GPC.product_category_id
+LEFT OUTER JOIN `grommet_product_to_keyword` GPTK ON GP.`id` = GPTK.`product_id`
+LEFT OUTER JOIN `grommet_product_keywords` GPK ON GPTK.`keyword_id` = GPK.`id`
+WHERE GP.`is_sold_out` = 0 and (GGC.`sub_category` in ('Beauty & Personal Care', 'Skincare') or GPK.`keyword` = 'Aromatherapy');
+
+-- Query Execution Time : 0.094 sec
